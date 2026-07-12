@@ -60,6 +60,24 @@ function setStatus(element, message, isError = false) {
   element.style.color = isError ? "#b42318" : "";
 }
 
+function isPushActive() {
+  const subscription = oneSignal?.User?.PushSubscription;
+  return Boolean(
+    subscription?.optedIn && subscription.id && subscription.token,
+  );
+}
+
+async function waitForPushSubscription(timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (isPushActive()) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("Timed out waiting for the push subscription token.");
+}
+
 function renderCompanies() {
   const query = normalizeCompany(elements.search.value);
   const visible = companies.filter((company) =>
@@ -137,7 +155,7 @@ function clearCompanies() {
 
 async function syncPreferences() {
   writeStoredSet(STORAGE_KEY, selected);
-  if (!oneSignal || !oneSignal.User.PushSubscription.optedIn) {
+  if (!isPushActive()) {
     setStatus(
       elements.saveStatus,
       "Saved on this device. Enable notifications to activate alerts.",
@@ -181,14 +199,14 @@ function renderNotificationState() {
   if (!oneSignal) {
     return;
   }
-  const optedIn = oneSignal.User.PushSubscription.optedIn;
-  elements.enableButton.textContent = optedIn
+  const active = isPushActive();
+  elements.enableButton.textContent = active
     ? "Notifications enabled"
     : "Enable notifications";
-  elements.enableButton.disabled = optedIn;
+  elements.enableButton.disabled = active;
   setStatus(
     elements.notificationStatus,
-    optedIn
+    active
       ? "Push notifications are active on this device."
       : "Notifications are off. Enable them after choosing your companies.",
   );
@@ -215,10 +233,13 @@ async function enableNotifications() {
   elements.enableButton.disabled = true;
   try {
     await oneSignal.User.PushSubscription.optIn();
+    setStatus(
+      elements.notificationStatus,
+      "Finalizing your push subscription...",
+    );
+    await waitForPushSubscription();
     renderNotificationState();
-    if (oneSignal.User.PushSubscription.optedIn) {
-      await syncPreferences();
-    }
+    await syncPreferences();
   } catch (error) {
     console.error(error);
     setStatus(
