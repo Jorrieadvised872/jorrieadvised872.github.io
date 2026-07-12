@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { chromium, expect, test } from "@playwright/test";
 
 test("loads the installable PWA assets", async ({ request }) => {
   const manifest = await request.get("manifest.webmanifest");
@@ -15,7 +15,18 @@ test("loads the installable PWA assets", async ({ request }) => {
   expect(await worker.text()).toContain("OneSignalSDK.sw.js");
 });
 
-test("initializes push and saves personalized companies", async ({ page }) => {
+test("initializes push and saves personalized companies", async ({}, testInfo) => {
+  const context = await chromium.launchPersistentContext(
+    testInfo.outputPath("chrome-profile"),
+    {
+      channel: "chrome",
+      headless: true,
+    },
+  );
+  await context.grantPermissions(["notifications"], {
+    origin: "https://arjunbojja1.github.io",
+  });
+  const page = await context.newPage();
   const errors = [];
   page.on("console", (message) => {
     if (message.type() === "error") {
@@ -24,7 +35,9 @@ test("initializes push and saves personalized companies", async ({ page }) => {
   });
   page.on("pageerror", (error) => errors.push(`page: ${error.message}`));
 
-  await page.goto(`?e2e=${Date.now()}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`https://arjunbojja1.github.io/?e2e=${Date.now()}`, {
+    waitUntil: "domcontentloaded",
+  });
 
   const notificationStatus = page.locator("#notification-status");
   await expect(notificationStatus).toHaveText(
@@ -43,6 +56,17 @@ test("initializes push and saves personalized companies", async ({ page }) => {
     "Push notifications are active on this device.",
     { timeout: 20_000 },
   );
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        id: window.OneSignal?.User?.PushSubscription?.id,
+        token: window.OneSignal?.User?.PushSubscription?.token,
+      })),
+    )
+    .toMatchObject({
+      id: expect.any(String),
+      token: expect.stringContaining("https://fcm.googleapis.com/"),
+    });
 
   await page.locator("#save-button").click();
   await expect(page.locator("#save-status")).toHaveText(
@@ -54,8 +78,11 @@ test("initializes push and saves personalized companies", async ({ page }) => {
     const registrations = await navigator.serviceWorker.getRegistrations();
     return registrations.map((registration) => registration.active?.scriptURL);
   });
-  expect(registrationUrls).toContain(
-    "https://arjunbojja1.github.io/OneSignalSDKWorker.js",
-  );
+  expect(
+    registrationUrls.some(
+      (url) => new URL(url).pathname === "/OneSignalSDKWorker.js",
+    ),
+  ).toBeTruthy();
   expect(errors).toEqual([]);
+  await context.close();
 });

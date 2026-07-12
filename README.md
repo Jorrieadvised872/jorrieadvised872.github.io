@@ -24,6 +24,8 @@ Moving the worker breaks existing subscriptions.
 
 ```bash
 npm test
+npm run test:e2e
 ```
 
-Push subscriptions require HTTPS, so test the complete flow on GitHub Pages.
+The Playwright suite uses a persistent Chrome profile because Chrome disables
+the Push API in incognito browser contexts.
