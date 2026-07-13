@@ -31,6 +31,8 @@ const elements = {
   selectionCount: document.querySelector("#selection-count"),
   trackInputs: [...document.querySelectorAll('input[name="track[]"]')],
 };
+elements.recommendedButton.textContent =
+  `Select recommended ${RECOMMENDED_COMPANIES.length}`;
 
 let companies = [];
 let deferredInstallPrompt = null;

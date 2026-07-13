@@ -81,6 +81,9 @@ test("requires an account and defaults to dark mode", async ({ page }) => {
       headerVisibility: getComputedStyle(
         document.querySelector(".app-header"),
       ).visibility,
+      recommendedText: document.querySelector("#recommended-button").textContent,
+      timezoneOptions: document.querySelector("#timezone-input").options.length,
+      timezoneTag: document.querySelector("#timezone-input").tagName,
     };
   });
 
@@ -89,7 +92,11 @@ test("requires an account and defaults to dark mode", async ({ page }) => {
     colorScheme: "dark",
     dialogBackground: "rgb(16, 23, 34)",
     headerVisibility: "hidden",
+    recommendedText: "Select recommended 75",
+    timezoneOptions: state.timezoneOptions,
+    timezoneTag: "SELECT",
   });
+  expect(state.timezoneOptions).toBeGreaterThan(10);
   const selectionCount = await page.evaluate(() => {
     for (let index = 0; index < 75; index += 1) {
       window.JobAlertsUI.addCompanyAndTrack(`Test Company ${index}`, "ats");

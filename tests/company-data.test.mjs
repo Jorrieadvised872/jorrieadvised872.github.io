@@ -54,7 +54,8 @@ test("includes requested companies in the recommended set", () => {
     "Qualcomm",
   ];
 
-  assert.equal(RECOMMENDED_COMPANIES.length, 51);
+  assert.equal(RECOMMENDED_COMPANIES.length, 75);
+  assert.equal(new Set(RECOMMENDED_COMPANIES).size, 75);
   assert.ok(requested.every((company) => RECOMMENDED_COMPANIES.includes(company)));
 });
 

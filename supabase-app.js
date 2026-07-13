@@ -180,8 +180,66 @@ function populateDigestHours() {
     elements.digestHour.append(option);
   }
   elements.digestHour.value = "9";
-  elements.timezone.value =
+}
+
+function addTimezoneOption(parent, value, label = value) {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  parent.append(option);
+}
+
+function ensureTimezoneOption(value) {
+  if (
+    value &&
+    ![...elements.timezone.options].some((option) => option.value === value)
+  ) {
+    addTimezoneOption(elements.timezone, value);
+  }
+}
+
+function populateTimezones() {
+  const detected =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles";
+  const commonTimezones = [
+    ["America/Los_Angeles", "Pacific Time (Los Angeles)"],
+    ["America/Denver", "Mountain Time (Denver)"],
+    ["America/Chicago", "Central Time (Chicago)"],
+    ["America/New_York", "Eastern Time (New York)"],
+    ["America/Phoenix", "Arizona"],
+    ["America/Anchorage", "Alaska"],
+    ["Pacific/Honolulu", "Hawaii"],
+    ["America/Toronto", "Toronto"],
+    ["America/Vancouver", "Vancouver"],
+    ["UTC", "UTC"],
+  ];
+  if (!commonTimezones.some(([value]) => value === detected)) {
+    commonTimezones.unshift([detected, `${detected} (Detected)`]);
+  }
+
+  const commonGroup = document.createElement("optgroup");
+  commonGroup.label = "Common timezones";
+  for (const [value, label] of commonTimezones) {
+    addTimezoneOption(commonGroup, value, label);
+  }
+  elements.timezone.append(commonGroup);
+
+  const commonValues = new Set(commonTimezones.map(([value]) => value));
+  const allTimezones =
+    typeof Intl.supportedValuesOf === "function"
+      ? Intl.supportedValuesOf("timeZone")
+      : [];
+  if (allTimezones.length) {
+    const allGroup = document.createElement("optgroup");
+    allGroup.label = "All timezones";
+    for (const timezone of allTimezones) {
+      if (!commonValues.has(timezone)) {
+        addTimezoneOption(allGroup, timezone);
+      }
+    }
+    elements.timezone.append(allGroup);
+  }
+  elements.timezone.value = detected;
 }
 
 function showView(name) {
@@ -218,10 +276,12 @@ function populateAdvancedPreferences(preferences, profile) {
     input.checked = (preferences.role_categories || []).includes(input.value);
   }
   elements.deliveryMode.value = profile.delivery_mode || "instant";
-  elements.timezone.value =
+  const timezone =
     profile.timezone ||
     Intl.DateTimeFormat().resolvedOptions().timeZone ||
     "America/Los_Angeles";
+  ensureTimezoneOption(timezone);
+  elements.timezone.value = timezone;
   elements.digestHour.value = String(profile.digest_hour ?? 9);
   elements.quietStart.value = (profile.quiet_start || "").slice(0, 5);
   elements.quietEnd.value = (profile.quiet_end || "").slice(0, 5);
@@ -1087,6 +1147,7 @@ for (const button of document.querySelectorAll("[data-close-dialog]")) {
 }
 
 populateDigestHours();
+populateTimezones();
 elements.googleSignin.classList.toggle(
   "hidden",
   !config.googleAuthEnabled,
