@@ -52,10 +52,18 @@ test("includes requested companies in the recommended set", () => {
     "PayPal",
     "Pinterest",
     "Qualcomm",
+    "Aquatic Capital Management",
+    "Akuna Capital",
+    "Citadel",
+    "DRW",
+    "Five Rings",
+    "SIG",
+    "Tower Research Capital",
+    "Two Sigma",
   ];
 
-  assert.equal(RECOMMENDED_COMPANIES.length, 75);
-  assert.equal(new Set(RECOMMENDED_COMPANIES).size, 75);
+  assert.equal(RECOMMENDED_COMPANIES.length, 125);
+  assert.equal(new Set(RECOMMENDED_COMPANIES).size, 125);
   assert.ok(requested.every((company) => RECOMMENDED_COMPANIES.includes(company)));
 });
 
@@ -63,6 +71,9 @@ test("canonicalizes requested trading and Qualcomm company names", () => {
   assert.equal(canonicalCompany("Hudson River Trading"), "HRT");
   assert.equal(canonicalCompany("Jump Trading Group"), "Jump Trading");
   assert.equal(canonicalCompany("Qualcomm Technologies, Inc."), "Qualcomm");
+  assert.equal(canonicalCompany("Aquatic"), "Aquatic Capital Management");
+  assert.equal(canonicalCompany("Susquehanna"), "SIG");
+  assert.equal(canonicalCompany("Tower Research"), "Tower Research Capital");
 });
 
 test("requires source table markers", () => {

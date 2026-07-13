@@ -92,7 +92,7 @@ test("requires an account and defaults to dark mode", async ({ page }) => {
     colorScheme: "dark",
     dialogBackground: "rgb(16, 23, 34)",
     headerVisibility: "hidden",
-    recommendedText: "Select recommended 75",
+    recommendedText: "Select recommended 125",
     timezoneOptions: state.timezoneOptions,
     timezoneTag: "SELECT",
   });

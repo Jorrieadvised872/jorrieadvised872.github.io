@@ -3,8 +3,8 @@ import {
   resumeMatchScore,
   sortJobsNewestFirst,
   sourceLabel,
-} from "./job-utils.js?v=20260713-1";
-import { readPdfPageText } from "./pdf-utils.js?v=20260713-1";
+} from "./job-utils.js?v=20260713-2";
+import { readPdfPageText } from "./pdf-utils.js?v=20260713-2";
 
 const config = window.NEW_GRAD_ALERTS_CONFIG || {};
 const SOURCE_KEYS = new Set([
@@ -1013,9 +1013,9 @@ function renderResumeProfile(profile) {
 }
 
 async function extractPdfText(file) {
-  const pdfjs = await import("./vendor/pdf.mjs?v=20260713-1");
+  const pdfjs = await import("./vendor/pdf.mjs?v=20260713-2");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "./vendor/pdf.worker.mjs?v=20260713-1",
+    "./vendor/pdf.worker.mjs?v=20260713-2",
     import.meta.url,
   ).href;
   const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
