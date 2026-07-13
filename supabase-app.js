@@ -293,33 +293,32 @@ window.JobAlertsData = {
   isAuthenticated: isSignedIn,
 };
 
-function oneSignalOperation(operation) {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error("OneSignal did not become ready."));
-    }, 15_000);
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async (sdk) => {
-      try {
-        await operation(sdk);
-        clearTimeout(timeout);
-        resolve();
-      } catch (error) {
-        clearTimeout(timeout);
-        reject(error);
+function syncOneSignalIdentity() {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async (sdk) => {
+    const userId = isSignedIn() ? currentUser.id : null;
+    try {
+      if (userId) {
+        await sdk.login(userId);
+        if (currentUser?.id === userId) {
+          localStorage.setItem(ONESIGNAL_IDENTITY_KEY, userId);
+        }
+      } else {
+        await sdk.logout();
+        if (!isSignedIn()) {
+          localStorage.removeItem(ONESIGNAL_IDENTITY_KEY);
+        }
       }
-    });
+    } catch (error) {
+      if (currentUser?.id === userId) {
+        setText(
+          elements.accountStatus,
+          "Signed in, but push notification identity is still connecting.",
+          true,
+        );
+      }
+    }
   });
-}
-
-async function loginOneSignal(user) {
-  await oneSignalOperation((sdk) => sdk.login(user.id));
-  localStorage.setItem(ONESIGNAL_IDENTITY_KEY, user.id);
-}
-
-async function logoutOneSignal() {
-  await oneSignalOperation((sdk) => sdk.logout());
-  localStorage.removeItem(ONESIGNAL_IDENTITY_KEY);
 }
 
 function renderAccount() {
@@ -330,6 +329,8 @@ function renderAccount() {
   elements.signedOutControls.classList.toggle("hidden", signedIn);
   elements.signoutButton.classList.toggle("hidden", !signedIn);
   elements.accountClose.classList.toggle("hidden", !signedIn);
+  elements.googleSignin.disabled = signedIn || !config.googleAuthEnabled;
+  elements.magicLinkSignin.disabled = signedIn;
   document.body.classList.toggle("auth-required", !signedIn);
   setText(
     elements.accountStatus,
@@ -453,18 +454,14 @@ async function registeredSession(session) {
 async function handleSession(session) {
   currentUser = session?.user || null;
   if (!isSignedIn()) {
-    try {
-      await logoutOneSignal();
-    } catch (error) {
-      console.error(error);
-    }
     currentProfile = null;
     currentPreferences = null;
     renderAccount();
+    localStorage.removeItem(ONESIGNAL_IDENTITY_KEY);
+    syncOneSignalIdentity();
     return;
   }
 
-  await loginOneSignal(currentUser);
   const [{ data: storedProfile, error: profileError }, { data: storedPreferences, error: preferenceError }] =
     await Promise.all([
       client.from("profiles").select("*").eq("id", currentUser.id).single(),
@@ -489,6 +486,7 @@ async function handleSession(session) {
   populateAdvancedPreferences(preferences, profile);
   ui.applyBasicPreferences(preferences);
   renderAccount();
+  syncOneSignalIdentity();
   await Promise.all([loadApplications(), loadMonitors()]);
 
   const local = ui.getBasicPreferences();

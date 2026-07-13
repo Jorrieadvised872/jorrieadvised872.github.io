@@ -7,7 +7,8 @@ export default defineConfig({
   retries: 0,
   reporter: "list",
   use: {
-    baseURL: "https://arjunbojja1.github.io/",
+    baseURL:
+      process.env.PWA_TEST_URL || "https://arjunbojja1.github.io/",
     channel: "chrome",
     headless: true,
     permissions: ["notifications"],

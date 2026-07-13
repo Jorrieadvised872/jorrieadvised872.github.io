@@ -18,6 +18,7 @@
     </script>
     <script
       src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      onerror="window.OneSignalUnavailable = true; window.dispatchEvent(new Event('onesignal-sdk-unavailable'))"
       defer
     ></script>
     <script
@@ -280,16 +281,19 @@
           <button id="account-close" class="dialog-close hidden" type="submit" value="cancel" aria-label="Close">×</button>
           <div class="eyebrow">Account</div>
           <h2 id="account-heading">Sign in to Job Alerts</h2>
-          <p id="account-status" class="muted">An account is required to continue.</p>
+          <p id="account-status" class="muted">Loading secure sign-in...</p>
           <div id="signed-out-controls">
-            <button id="google-signin" class="button secondary full" type="button">Continue with Google</button>
+            <button id="google-signin" class="button secondary full" type="button" disabled>Continue with Google</button>
             <div id="google-divider" class="divider">or</div>
             <label class="field"><span>Email</span><input id="auth-email" type="email" placeholder="you@example.com"></label>
-            <button id="magic-link-signin" class="button primary full" type="button">Email me a magic link</button>
+            <button id="magic-link-signin" class="button primary full" type="button" disabled>Email me a magic link</button>
           </div>
           <button id="signout-button" class="button secondary full hidden" type="button">Sign out</button>
         </form>
       </dialog>
+      <script>
+        document.querySelector("#account-dialog").showModal();
+      </script>
 
       <dialog id="application-dialog">
         <form id="application-form" class="dialog-card">

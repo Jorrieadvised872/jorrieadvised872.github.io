@@ -140,3 +140,33 @@ test("shows a recoverable error when authentication cannot load", async ({
   await page.locator("#auth-email").press("Enter");
   await expect(page.locator("#account-dialog")).toBeVisible();
 });
+
+test("keeps account sign-in available when the push SDK is blocked", async ({
+  page,
+}) => {
+  await page.route("**/OneSignalSDK.page.js", (route) => route.abort());
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto(process.env.PWA_TEST_URL || "/", {
+    waitUntil: "domcontentloaded",
+  });
+
+  await expect(page.locator("#account-dialog")).toBeVisible();
+  await expect(page.locator("#google-signin")).toBeEnabled();
+  await expect(page.locator("#magic-link-signin")).toBeEnabled();
+  await expect(page.locator("#account-status")).toHaveText(
+    "Sign in with Google or email to continue.",
+  );
+  expect(pageErrors).toEqual([]);
+
+  await Promise.all([
+    page.waitForURL((url) => url.hostname === "accounts.google.com", {
+      timeout: 20_000,
+    }),
+    page.locator("#google-signin").click(),
+  ]);
+  expect(new URL(page.url()).searchParams.get("redirect_uri")).toBe(
+    "https://crzwuslcnflhfbybpeou.supabase.co/auth/v1/callback",
+  );
+});

@@ -11,7 +11,9 @@ test("loads the installable PWA assets", async ({ request }) => {
 
   const worker = await request.get("OneSignalSDKWorker.js");
   expect(worker.ok()).toBeTruthy();
-  expect(worker.headers()["content-type"]).toContain("application/javascript");
+  expect(worker.headers()["content-type"]).toMatch(
+    /^(application|text)\/javascript/,
+  );
   expect(await worker.text()).toContain("OneSignalSDK.sw.js");
 });
 
