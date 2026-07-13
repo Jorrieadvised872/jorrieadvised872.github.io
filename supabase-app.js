@@ -1012,11 +1012,11 @@ function renderResumeProfile(profile) {
 }
 
 async function extractPdfText(file) {
-  const pdfjs = await import(
-    "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.mjs"
-  );
-  pdfjs.GlobalWorkerOptions.workerSrc =
-    "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.mjs";
+  const pdfjs = await import("./vendor/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "./vendor/pdf.worker.mjs",
+    import.meta.url,
+  ).href;
   const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
   const pages = [];
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -1044,6 +1044,9 @@ async function uploadResume() {
   setText(elements.resumeStatus, "Extracting skills and uploading securely...");
   try {
     const text = await extractPdfText(file);
+    if (!text.trim()) {
+      throw new Error("No selectable text was found in this PDF.");
+    }
     const profile = deriveResumeProfile(text);
     const path = `${currentUser.id}/resume-${Date.now()}.pdf`;
     const { error: uploadError } = await client.storage
@@ -1075,7 +1078,11 @@ async function uploadResume() {
     renderResumeProfile(profile);
   } catch (error) {
     console.error(error);
-    setText(elements.resumeStatus, "Resume processing failed. Please retry.", true);
+    setText(
+      elements.resumeStatus,
+      `Resume processing failed: ${error.message || "Unknown error."}`,
+      true,
+    );
   }
 }
 

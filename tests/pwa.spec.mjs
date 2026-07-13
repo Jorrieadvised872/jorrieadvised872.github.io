@@ -19,6 +19,14 @@ test("loads the installable PWA assets", async ({ request }) => {
   const supabase = await request.get("vendor/supabase.js");
   expect(supabase.ok()).toBeTruthy();
   expect(await supabase.text()).toContain("createClient");
+
+  for (const asset of ["vendor/pdf.mjs", "vendor/pdf.worker.mjs"]) {
+    const response = await request.get(asset);
+    expect(response.ok()).toBeTruthy();
+    expect(response.headers()["content-type"]).toMatch(
+      /^(application|text)\/javascript/,
+    );
+  }
 });
 
 test("requires authentication before showing the application", async ({
