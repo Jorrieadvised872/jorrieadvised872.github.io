@@ -60,6 +60,7 @@ const elements = {
   accountClose: document.querySelector("#account-close"),
   accountDialog: document.querySelector("#account-dialog"),
   accountForm: document.querySelector("#account-form"),
+  accountHeading: document.querySelector("#account-heading"),
   accountStatus: document.querySelector("#account-status"),
   signedOutControls: document.querySelector("#signed-out-controls"),
   signoutButton: document.querySelector("#signout-button"),
@@ -323,9 +324,18 @@ function syncOneSignalIdentity() {
 
 function renderAccount() {
   const signedIn = isSignedIn();
+  const displayName =
+    currentProfile?.display_name ||
+    currentUser?.user_metadata?.full_name ||
+    currentUser?.user_metadata?.name ||
+    currentUser?.email;
   elements.accountButton.textContent = signedIn
-    ? currentUser.email || "Account"
+    ? displayName || "Account"
     : "Sign in";
+  elements.accountButton.title = signedIn ? currentUser.email || "" : "";
+  elements.accountHeading.textContent = signedIn
+    ? "Your account"
+    : "Sign in to Job Alerts";
   elements.signedOutControls.classList.toggle("hidden", signedIn);
   elements.signoutButton.classList.toggle("hidden", !signedIn);
   elements.accountClose.classList.toggle("hidden", !signedIn);
@@ -558,6 +568,8 @@ function jobMatchesSearch(job, query) {
 function createJobCard(job) {
   const card = document.createElement("article");
   card.className = "job-card";
+  const header = document.createElement("div");
+  header.className = "job-card-header";
   const content = document.createElement("div");
   const title = document.createElement("h3");
   title.textContent = job.title;
@@ -585,7 +597,8 @@ function createJobCard(job) {
   save.textContent = "Save";
   save.addEventListener("click", () => saveJobApplication(job));
   actions.append(apply, save);
-  card.append(content, score, actions);
+  header.append(content, score);
+  card.append(header, actions);
   return card;
 }
 
@@ -715,7 +728,11 @@ function createApplicationCard(application) {
   edit.type = "button";
   edit.textContent = "Edit";
   edit.addEventListener("click", () => openApplicationDialog(application));
-  card.append(title, meta, status, edit);
+  const controls = document.createElement("div");
+  controls.className = "application-controls";
+  status.className = "application-status";
+  controls.append(status, edit);
+  card.append(title, meta, controls);
   return card;
 }
 
