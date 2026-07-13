@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  RECOMMENDED_COMPANIES,
   canonicalCompany,
   companyTag,
   fetchCompanies,
@@ -35,6 +36,12 @@ test("creates stable OneSignal tag keys", () => {
   assert.equal(companyTag("Uber Technologies, Inc."), "company_uber");
   assert.equal(companyTag("Scale"), "company_scale_ai");
   assert.equal(canonicalCompany("**Google**"), "Google");
+});
+
+test("includes requested companies in the recommended set", () => {
+  assert.equal(RECOMMENDED_COMPANIES.length, 41);
+  assert.ok(RECOMMENDED_COMPANIES.includes("Datadog"));
+  assert.ok(RECOMMENDED_COMPANIES.includes("Google DeepMind"));
 });
 
 test("requires source table markers", () => {
